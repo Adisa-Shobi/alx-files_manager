@@ -1,5 +1,7 @@
+const { ObjectId } = require('mongodb');
 const sha1 = require('sha1');
 const dbClient = require('../utils/db');
+const redisClient = require('../utils/redis');
 
 class UsersController {
   static async postNew(req, res) {
@@ -13,7 +15,7 @@ class UsersController {
       return res.status(400).json({ error: 'Missing password' });
     }
 
-    const isUser = await dbClient.db.collection('users').findOne(
+    const isUser = await dbClient.users.findOne(
       { email },
     );
 
@@ -24,7 +26,7 @@ class UsersController {
     const sha1Password = sha1(password);
     let result;
     try {
-      result = await dbClient.db.collection('users').insertOne(
+      result = await dbClient.users.insertOne(
         { email, password: sha1Password },
       );
     } catch (err) {
@@ -33,6 +35,25 @@ class UsersController {
 
     const user = { id: result.insertedId, email };
     return res.status(201).send(user);
+  }
+
+  // Returns the current user based on the token given
+  static async getMe(req, res) {
+    const token = req.header('X-Token') || '';
+
+    const key = `auth_${token}`;
+    const userId = await redisClient.get(key);
+
+    if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+
+    const userObj = await dbClient.users.findOne({ _id: ObjectId(userId) });
+
+    const userData = {
+      id: userObj._id.toString(),
+      email: userObj.email,
+    };
+
+    return res.json(userData);
   }
 }
 
