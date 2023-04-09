@@ -12,7 +12,12 @@ class AuthController {
     if (!isBasic || !creds) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
-    const binData = Buffer.from(creds, 'base64').toString('utf-8');
+    let binData;
+    try {
+      binData = Buffer.from(creds, 'base64').toString('utf-8');
+    } catch (err) {
+      return res.status(401).json({ error: err.message });
+    }
     const user = binData.split(':');
     const userObj = await dbClient.users.findOne({
       email: user[0],
