@@ -18,7 +18,14 @@ class AuthController {
     } catch (err) {
       return res.status(401).json({ error: err.message });
     }
+
     const user = binData.split(':');
+    if (!user[0] || !user[1]) {
+      return res.status(401).json(
+        { error: 'Unauthorized' },
+      );
+    }
+
     const userObj = await dbClient.users.findOne({
       email: user[0],
       password: sha1(user[1]),
