@@ -6,8 +6,12 @@ const redisClient = require('../utils/redis');
 class AuthController {
   static async getConnect(req, res) {
     let authData = req.header('Authorization') || '';
+    const isBasic = authData.startsWith('Basic');
     authData = authData.split(' ');
     const creds = authData[authData.length - 1];
+    if (!isBasic || !creds) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
     const binData = Buffer.from(creds, 'base64').toString('utf-8');
     const user = binData.split(':');
     const userObj = await dbClient.users.findOne({
