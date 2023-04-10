@@ -79,7 +79,10 @@ class FilesController {
     // Verify the auth token sent by user
     if (!userObj) return res.status(401).json({ error: 'Unauthorized' });
 
-    const fileObj = await dbClient.files.findOne({ _id: ObjectId(fileId) });
+    const fileObj = await dbClient.files.findOne({
+      _id: ObjectId(fileId),
+      userId,
+    });
 
     // If the file is not found
     if (!fileObj) return res.status(404).json({ error: 'Not found' });
