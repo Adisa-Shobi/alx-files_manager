@@ -68,6 +68,49 @@ class FilesController {
     });
     return 0;
   }
+
+  static async getShow(req, res) {
+    const fileId = req.params.id;
+    const token = req.header('X-token');
+
+    const userId = await redisClient.get(`auth_${token}`);
+    const userObj = await dbClient.users.findOne({ _id: ObjectId(userId) });
+
+    // Verify the auth token sent by user
+    if (!userObj) return res.status(401).json({ error: 'Unauthorized' });
+
+    const fileObj = await dbClient.files.findOne({ _id: ObjectId(fileId) });
+
+    // If the file is not found
+    if (!fileObj) return res.status(404).json({ error: 'Not found' });
+
+    delete fileObj.localPath;
+    return res.json(fileObj);
+  }
+
+  static async getIndex(req, res) {
+    const token = req.header('X-token');
+
+    const { parentId = 0, page = 0 } = req.query;
+
+    const userId = await redisClient.get(`auth_${token}`);
+    const userObj = await dbClient.users.findOne({ _id: ObjectId(userId) });
+
+    // Verify the auth token sent by user
+    if (!userObj) return res.status(401).json({ error: 'Unauthorized' });
+
+    const filesPage = dbClient.files.aggregate([
+      { $match: { parentId } },
+      { $sort: { createdAt: 1 } },
+      { $skip: page * 20 },
+      { $limit: 20 },
+    ]);
+
+    const pageData = await filesPage.toArray();
+    console.log(pageData);
+
+    return res.json(pageData);
+  }
 }
 
 module.exports = FilesController;
