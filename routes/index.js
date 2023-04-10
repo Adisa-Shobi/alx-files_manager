@@ -35,7 +35,7 @@ router.get('/disconnect', (req, res) => {
 });
 
 router.post('/files', (req, res) => {
-    FilesController.postUpload(req, res);
-})
+  FilesController.postUpload(req, res);
+});
 
 module.exports = router;
