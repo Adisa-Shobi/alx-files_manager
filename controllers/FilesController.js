@@ -113,8 +113,8 @@ class FilesController {
 
     const filesPage = dbClient.files.aggregate([
       { $match: query },
-      { $sort: { createdAt: 1 } },
-      { $skip: page * 20 },
+      { $sort: { createdAt: -1 } },
+	{ $skip: parseInt(page) * 20 },
       { $limit: 20 },
     ]);
 
