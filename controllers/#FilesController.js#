@@ -120,11 +120,10 @@ class FilesController {
 
     const pageData = await filesPage.toArray();
     const filteredData = pageData.map((current) => {
-      const obj = current;
-      obj.id = obj._id;
-      delete obj._id;
-      delete obj.localPath;
-      return obj;
+      current.id = current._id;
+      delete current._id;
+      delete current.localPath;
+      return current;
     });
     console.log(filteredData);
 
