@@ -103,7 +103,14 @@ class FilesController {
     if (!userObj) return res.status(401).json({ error: 'Unauthorized' });
 
     const filesPage = dbClient.files.aggregate([
-      { $match: { parentId } },
+      {
+        $match: {
+          $or: [
+            { parentId },
+            { userId },
+          ],
+        },
+      },
       { $sort: { createdAt: 1 } },
       { $skip: page * 20 },
       { $limit: 20 },
